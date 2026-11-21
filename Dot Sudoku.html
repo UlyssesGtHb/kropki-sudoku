@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dot Sudoku</title>
+<style>
+:root{--bg:#f4f1ea;--ink:#25303b;--cell:#fffdf8;--line:#9aa5b1;--sel:#cfe3ff;--rel:#eaf2fc;--err:#d6342c;--given:#111;--user:#2563c9;--btn:#e4dfd3;--acc:#2563c9;--card:#fffdf8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171b21;--ink:#e6e9ee;--cell:#222831;--line:#566170;--sel:#2f4a73;--rel:#2a323d;--err:#ff6b62;--given:#fff;--user:#7fb0ff;--btn:#303846;--acc:#7fb0ff;--card:#222831}}
+:root[data-theme="dark"]{--bg:#171b21;--ink:#e6e9ee;--cell:#222831;--line:#566170;--sel:#2f4a73;--rel:#2a323d;--err:#ff6b62;--given:#fff;--user:#7fb0ff;--btn:#303846;--acc:#7fb0ff;--card:#222831}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:520px;margin:0 auto;padding:14px 12px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+h1{font-size:1.5rem;margin:8px 0 0}
+button{font:inherit;color:var(--ink);background:var(--btn);border:0;border-radius:10px;padding:9px 14px;cursor:pointer}
+button.pri{background:var(--acc);color:#fff}
+.modes{display:grid;gap:8px;width:min(94vw,480px)}
+.mode{text-align:left;padding:12px 14px;border:2px solid transparent}
+.mode.on{border-color:var(--acc)}
+.mode b{display:block;font-size:1.05rem}.mode small{opacity:.8}
+.lvls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(94vw,480px)}
+.lvls button{padding:12px 4px;display:flex;flex-direction:column;gap:3px;align-items:center}
+.lvls small{opacity:.75;font-size:.72rem}
+.top{display:flex;justify-content:space-between;align-items:center;width:min(94vw,480px);gap:8px}
+.top .t{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.2rem;text-align:center}
+.top small{display:block;font-weight:400;opacity:.75;font-size:.72rem}
+#board{--w:min(94vw,480px);position:relative;width:var(--w);height:var(--w);display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));border:3px solid var(--ink);box-sizing:content-box;user-select:none;touch-action:manipulation}
+.cell{position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--cell);border:1px solid var(--line);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:calc(var(--w)/9*.55);cursor:pointer}
+.cell.r2{border-bottom:2px solid var(--ink)}.cell.c2{border-right:2px solid var(--ink)}
+.cell.rel{background:var(--rel)}.cell.sel{background:var(--sel)}
+.cell.g{color:var(--given);font-weight:700}.cell.u{color:var(--user)}.cell.bad{color:var(--err)}
+.notes{position:absolute;inset:2px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);font-size:calc(var(--w)/9*.24);line-height:1;opacity:.8}
+.notes span{display:flex;align-items:center;justify-content:center}
+.dot,.quad{position:absolute;border-radius:50%;background:#fff;border:2px solid #25303b;box-sizing:border-box;transform:translate(-50%,-50%);pointer-events:none}
+.dot{width:calc(var(--w)/9*.26);height:calc(var(--w)/9*.26);z-index:2}
+.quad{width:calc(var(--w)/9*.46);height:calc(var(--w)/9*.46);z-index:3;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;padding:1px;color:#111;font-size:calc(var(--w)/9*.19);line-height:1}
+.quad b{width:50%;text-align:center}.quad.three b:last-child{width:100%}
+.pad{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;width:min(94vw,480px)}
+.pad button{padding:10px 0;font-size:1.15rem}
+.pad.four{grid-template-columns:repeat(4,1fr)}.pad.four button{font-size:.95rem;padding:9px 2px}
+#msg{min-height:1.4em;font-weight:600;text-align:center}
+.help{font-size:.85rem;opacity:.8;text-align:center;max-width:460px;line-height:1.4}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.box{background:var(--card);border-radius:16px;padding:24px;max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px}
+.box h2{margin:0}.box .big{font-size:2.2rem;font-weight:800;font-variant-numeric:tabular-nums}
+.badge{background:#f5c542;color:#222;border-radius:99px;padding:4px 12px;font-weight:700;align-self:center}
+</style>
+</head>
+<body>
+<main>
+<section id="menu" style="display:contents">
+  <h1>Dot Sudoku</h1>
+  <div class="modes" id="modes"></div>
+  <div class="lvls" id="lvls"></div>
+  <p class="help">Small white dot: the two digits are consecutive. Circle on a corner: its digits must all appear in the four cells around it. Every puzzle has exactly one solution.</p>
+</section>
+<section id="game" style="display:contents" hidden>
+  <div class="top"><button id="back">Menu</button><div class="t"><span id="time">0:00</span><small id="best"></small></div><button id="again">New</button></div>
+  <div id="board"></div>
+  <div class="pad" id="pad"></div>
+  <div class="pad four"><button id="notes">Notes: off</button><button id="erase">Erase</button><button id="check">Check</button><button id="reveal">Reveal</button></div>
+  <div id="msg"></div>
+  <small class="help" id="label"></small>
+</section>
+</main>
+<div id="modal" hidden></div>
+<script>
+const $=s=>document.querySelector(s);
+const MODES=[["Normal","Classic sudoku with some digits given."],["Kropki","Some digits given, plus dots and circles."],["Impossible","No digits given. Only dots and circles."]];
+const LV=["Easy","Medium","Hard","Expert"];
+let mode=0,lv=0,P,val,notes,sel=-1,pencil=false,t0=0,tick=null,done=false;
+const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const fmt=ms=>{const s=Math.floor(ms/1000);return (s/60|0)+":"+String(s%60).padStart(2,"0")};
+const bk=(m=mode,l=lv)=>"dotsudoku:"+m+":"+l;
+const getBest=(m,l)=>{try{return +localStorage.getItem(bk(m,l))||0}catch(e){return 0}};
+const setBest=v=>{try{localStorage.setItem(bk(),v)}catch(e){}};
+
+/* ---------- solver (counts up to 2 solutions) ---------- */
+function solve(giv,dots,quads,lim){
+  const v=giv.slice(),R=Array(9).fill(0),C=Array(9).fill(0),B=Array(9).fill(0);
+  const nb=Array.from({length:81},()=>[]),qs=Array.from({length:81},()=>[]);
+  dots.forEach(d=>{nb[d.a].push(d.b);nb[d.b].push(d.a)});
+  quads.forEach(q=>q.cells.forEach(i=>qs[i].push(q)));
+  const bx=i=>(i/27|0)*3+(i%9/3|0);
+  const cand=i=>0x3fe&~(R[i/9|0]|C[i%9]|B[bx(i)]);
+  const pop=m=>{let c=0;while(m){m&=m-1;c++}return c};
+  const place=(i,d)=>{const b=1<<d;v[i]=d;R[i/9|0]|=b;C[i%9]|=b;B[bx(i)]|=b};
+  const unplace=(i,d)=>{const b=1<<d;v[i]=0;R[i/9|0]&=~b;C[i%9]&=~b;B[bx(i)]&=~b};
+  const good=(i,d)=>{
+    for(const j of nb[i]){if(v[j]){if(Math.abs(v[j]-d)!=1)return false}else if(!(cand(j)&((1<<(d-1))|(1<<(d+1)))))return false}
+    for(const q of qs[i]){let u=0;const pl=q.ds.slice();for(const c of q.cells){if(!v[c])u++;else{const k=pl.indexOf(v[c]);if(k>=0)pl.splice(k,1)}}if(pl.length>u)return false}
+    return true};
+  const res={count:0,sols:[],over:false};let nodes=0;
+  for(let i=0;i<81;i++)if(giv[i]){v[i]=0;if(!(cand(i)>>giv[i]&1)){return res}place(i,giv[i])}
+  for(let i=0;i<81;i++)if(giv[i]&&!good(i,giv[i]))return res;
+  const rec=()=>{
+    if(res.over)return;if(++nodes>lim){res.over=true;return}
+    let bi=-1,bc=10,bm=0;
+    for(let i=0;i<81;i++)if(!v[i]){const m=cand(i),c=pop(m);if(c<bc){bc=c;bi=i;bm=m;if(c<2)break}}
+    if(bi<0){res.count++;res.sols.push(v.slice());if(res.count>=2)res.over=true;return}
+    for(let d=1;d<=9;d++)if(bm>>d&1){place(bi,d);if(good(bi,d))rec();unplace(bi,d);if(res.over)return}
+  };
+  rec();return res;
+}
+const okMask=(g,i,d)=>{const r=i/9|0,c=i%9;for(let k=0;k<9;k++)if(g[r*9+k]==d||g[k*9+c]==d)return false;
+  const br=r-r%3,bc=c-c%3;for(let a=0;a<3;a++)for(let b=0;b<3;b++)if(g[(br+a)*9+bc+b]==d)return false;return true};
+function fill(g,i=0){if(i==81)return true;for(const d of shuf([1,2,3,4,5,6,7,8,9]))if(okMask(g,i,d)){g[i]=d;if(fill(g,i+1))return true;g[i]=0}return false}
+
+/* ---------- generator ---------- */
+function qAt(s,r,c){const cells=[r*9+c,r*9+c+1,r*9+c+9,r*9+c+10];const ds=[...new Set(cells.map(i=>s[i]))].sort();return ds.length>2?{t:"q",cells,ds,x:c+1,y:r+1}:null}
+function mk(s,key){
+  const t=key[0],n=key.slice(1).split("-").map(Number);
+  if(t=="d"){const[a,b]=n;if(Math.abs(s[a]-s[b])!=1)return null;return{t,a,b,key,x:(a%9+b%9)/2+.5,y:((a/9|0)+(b/9|0))/2+.5}}
+  if(t=="q"){const q=qAt(s,n[0],n[1]);if(q)q.key=key;return q}
+  return{t,i:n[0],v:s[n[0]],key};
+}
+const mirror=k=>{const t=k[0],n=k.slice(1).split("-").map(Number);return t=="d"?"d"+(80-n[1])+"-"+(80-n[0]):t=="q"?"q"+(7-n[0])+"-"+(7-n[1]):"g"+(80-n[0])};
+const parts=S=>{const a=[...S.values()];return{giv:Array.from({length:81},(_,i)=>{const g=S.get("g"+i);return g?g.v:0}),dots:a.filter(x=>x.t=="d"),quads:a.filter(x=>x.t=="q")}};
+const uniq=(S,lim)=>{const p=parts(S),r=solve(p.giv,p.dots,p.quads,lim);r.ok=r.count==1&&!r.over;return r};
+const viol=(it,s2)=>it.t=="d"?Math.abs(s2[it.a]-s2[it.b])!=1:it.t=="g"?s2[it.i]!=it.v:(()=>{const pl=it.cells.map(i=>s2[i]);return it.ds.some(d=>{const k=pl.indexOf(d);if(k<0)return true;pl.splice(k,1);return false})})();
+
+function gen(m,l){
+  for(let tr=0;tr<40;tr++){
+    const sol=Array(81).fill(0);fill(sol);
+    const S=new Map(),add=k=>{for(const kk of[k,mirror(k)])if(!S.has(kk)){const it=mk(sol,kk);if(it)S.set(kk,it)}};
+    const dk=[],qk=[],gk=[...Array(81).keys()].map(i=>"g"+i);
+    for(let i=0;i<81;i++){if(i%9<8&&Math.abs(sol[i]-sol[i+1])==1)dk.push("d"+i+"-"+(i+1));if(i<72&&Math.abs(sol[i]-sol[i+9])==1)dk.push("d"+i+"-"+(i+9))}
+    for(let r=0;r<8;r++)for(let c=0;c<8;c++)if(qAt(sol,r,c))qk.push("q"+r+"-"+c);
+    if(m==0){
+      gk.forEach(k=>S.set(k,mk(sol,k)));let n=81;const T=[40,33,28,24][l];
+      for(const k of shuf(gk.slice())){if(n<=T)break;const it=S.get(k);S.delete(k);if(uniq(S,20000).ok)n--;else S.set(k,it)}
+      return{sol,...parts(S)};
+    }
+    if(m==1){shuf(dk.slice()).slice(0,Math.round(dk.length*[.9,.7,.5,.35][l]/2)).forEach(add);shuf(qk.slice()).slice(0,[5,4,3,2][l]).forEach(add);shuf(gk.slice()).slice(0,[17,14,11,8][l]).forEach(add)}
+    else{dk.forEach(add);shuf(qk.slice()).slice(0,[11,9,7,6][l]).forEach(add)}
+    let ok=false;
+    for(let it=0;it<150;it++){
+      const r=uniq(S,40000);if(r.ok){ok=true;break}
+      const s2=r.sols.find(s=>s.some((x,i)=>x!=sol[i]));
+      const all=[...dk,...qk,...(m==1?gk:[])].filter(k=>!S.has(k));
+      let pool=s2?all.filter(k=>viol(mk(sol,k),s2)):all;
+      const nz=pool.filter(k=>k[0]!="g");if(nz.length&&Math.random()<.75)pool=nz;
+      if(!pool.length)break;add(pool[Math.random()*pool.length|0]);
+    }
+    if(!ok)continue;
+    if(m==2){
+      const end=Date.now()+[0,600,1200,2200][l];
+      for(const k of shuf([...S.keys()])){
+        if(Date.now()>end)break;if(!S.has(k))continue;
+        const rm=[...new Set([k,mirror(k)])].filter(x=>S.has(x)),sv=rm.map(x=>S.get(x));
+        rm.forEach(x=>S.delete(x));if(!uniq(S,20000).ok)sv.forEach(x=>S.set(x.key,x));
+      }
+    }
+    return{sol,...parts(S)};
+  }
+  const sol=Array(81).fill(0);fill(sol);return{sol,giv:sol.slice(),dots:[],quads:[]};
+}
+
+/* ---------- menu ---------- */
+function menu(){
+  $("#modes").innerHTML=MODES.map((m,i)=>`<button class="mode ${i==mode?"on":""}" data-m="${i}"><b>${m[0]}</b><small>${m[1]}</small></button>`).join("");
+  $("#lvls").innerHTML=LV.map((n,i)=>{const b=getBest(mode,i);return `<button class="pri" data-l="${i}">${n}<small>${b?"Best "+fmt(b):"No record"}</small></button>`}).join("");
+}
+$("#modes").onclick=e=>{const b=e.target.closest("button");if(b){mode=+b.dataset.m;menu()}};
+$("#lvls").onclick=e=>{const b=e.target.closest("button");if(b){lv=+b.dataset.l;start()}};
+$("#back").onclick=()=>{clearInterval(tick);$("#game").hidden=true;$("#menu").hidden=false;menu()};
+$("#again").onclick=()=>start();
+
+/* ---------- game ---------- */
+function start(){
+  $("#modal").hidden=true;$("#menu").hidden=true;$("#game").hidden=false;
+  clearInterval(tick);$("#board").innerHTML="";$("#msg").textContent="Generating a puzzle…";
+  $("#label").textContent=MODES[mode][0]+" · "+LV[lv];
+  setTimeout(()=>{
+    P=gen(mode,lv);val=P.giv.slice();notes=Array.from({length:81},()=>new Set());sel=-1;done=false;
+    $("#msg").textContent="";t0=Date.now();tick=setInterval(upd,500);render();upd();
+  },40);
+}
+function upd(){if(done)return;$("#time").textContent=fmt(Date.now()-t0);const b=getBest();$("#best").textContent=b?"Best "+fmt(b):"No record yet"}
+function conflicts(){
+  const bad=new Set(),grp=idx=>{const m={};idx.forEach(i=>{if(val[i])(m[val[i]]=m[val[i]]||[]).push(i)});Object.values(m).forEach(a=>{if(a.length>1)a.forEach(i=>bad.add(i))})};
+  for(let k=0;k<9;k++){grp([...Array(9).keys()].map(j=>k*9+j));grp([...Array(9).keys()].map(j=>j*9+k));
+    const b=[];for(let a=0;a<3;a++)for(let c=0;c<3;c++)b.push(((k/3|0)*3+a)*9+(k%3)*3+c);grp(b)}
+  P.dots.forEach(d=>{if(val[d.a]&&val[d.b]&&Math.abs(val[d.a]-val[d.b])!=1){bad.add(d.a);bad.add(d.b)}});
+  P.quads.forEach(q=>{const vs=q.cells.map(i=>val[i]);if(vs.every(Boolean)){const pl=[...vs];if(q.ds.some(d=>{const k=pl.indexOf(d);if(k<0)return true;pl.splice(k,1);return false}))q.cells.forEach(i=>bad.add(i))}});
+  return bad;
+}
+function render(){
+  const bad=conflicts(),sr=sel/9|0,sc=sel%9;let h="";
+  for(let i=0;i<81;i++){const r=i/9|0,c=i%9;
+    const rel=sel>=0&&(r==sr||c==sc||((r/3|0)==(sr/3|0)&&(c/3|0)==(sc/3|0)));
+    const cls=["cell",r%3==2&&r<8?"r2":"",c%3==2&&c<8?"c2":"",rel?"rel":"",i==sel?"sel":"",P.giv[i]?"g":val[i]?"u":"",bad.has(i)&&val[i]?"bad":""].join(" ");
+    let inner=val[i]||"";
+    if(!val[i]&&notes[i].size)inner='<div class="notes">'+[1,2,3,4,5,6,7,8,9].map(n=>`<span>${notes[i].has(n)?n:""}</span>`).join("")+"</div>";
+    h+=`<div class="${cls}" data-i="${i}">${inner}</div>`}
+  const pc=x=>x/9*100+"%";
+  P.dots.forEach(d=>h+=`<div class="dot" style="left:${pc(d.x)};top:${pc(d.y)}"></div>`);
+  P.quads.forEach(q=>h+=`<div class="quad ${q.ds.length==3?"three":""}" style="left:${pc(q.x)};top:${pc(q.y)}">${q.ds.map(d=>`<b>${d}</b>`).join("")}</div>`);
+  $("#board").innerHTML=h;
+  if(!done&&val.every(Boolean)&&!bad.size)win();
+}
+function win(){
+  done=true;clearInterval(tick);const t=Date.now()-t0,prev=getBest(),nb=!prev||t<prev;if(nb)setBest(t);
+  $("#time").textContent=fmt(t);
+  $("#modal").innerHTML=`<div class="box"><h2>Puzzle solved!</h2><div class="big">${fmt(t)}</div>${nb?'<span class="badge">New personal best</span>':`<div>Personal best: ${fmt(prev)}</div>`}<div>${MODES[mode][0]} · ${LV[lv]}</div><button class="pri" id="nx">Next puzzle</button><button id="mn">Back to menu</button></div>`;
+  $("#modal").hidden=false;$("#nx").onclick=start;$("#mn").onclick=()=>{$("#modal").hidden=true;$("#back").click()};
+}
+function put(n){
+  if(done||sel<0||P.giv[sel])return;$("#msg").textContent="";
+  if(n==0){val[sel]=0;notes[sel].clear()}
+  else if(pencil&&!val[sel]){notes[sel].has(n)?notes[sel].delete(n):notes[sel].add(n)}
+  else{val[sel]=val[sel]==n?0:n;notes[sel].clear();
+    if(val[sel]){const r=sel/9|0,c=sel%9;for(let k=0;k<9;k++){notes[r*9+k].delete(n);notes[k*9+c].delete(n)}}}
+  render();
+}
+$("#board").addEventListener("click",e=>{const c=e.target.closest(".cell");if(c){sel=+c.dataset.i;render()}});
+$("#pad").innerHTML=[1,2,3,4,5,6,7,8,9].map(n=>`<button data-n="${n}">${n}</button>`).join("");
+$("#pad").addEventListener("click",e=>{const b=e.target.closest("button");if(b)put(+b.dataset.n)});
+$("#erase").onclick=()=>put(0);
+$("#notes").onclick=e=>{pencil=!pencil;e.target.textContent="Notes: "+(pencil?"on":"off")};
+$("#check").onclick=()=>{if(done)return;const b=conflicts();$("#msg").textContent=b.size?"Some cells break a rule (shown in red).":"No rule broken so far. Keep going!"};
+$("#reveal").onclick=()=>{if(done)return;done=true;clearInterval(tick);val=[...P.sol];render();$("#msg").textContent="Solution revealed. No record for this one."};
+document.addEventListener("keydown",e=>{
+  if($("#game").hidden||done)return;
+  if(/^[1-9]$/.test(e.key))put(+e.key);
+  else if(["Backspace","Delete","0"].includes(e.key))put(0);
+  else if(sel>=0&&e.key.startsWith("Arrow")){e.preventDefault();const r=sel/9|0,c=sel%9;
+    sel=e.key=="ArrowUp"?Math.max(0,r-1)*9+c:e.key=="ArrowDown"?Math.min(8,r+1)*9+c:e.key=="ArrowLeft"?r*9+Math.max(0,c-1):r*9+Math.min(8,c+1);render()}
+});
+menu();
+</script>
+</body>
+</html>
