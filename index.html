@@ -10,7 +10,15 @@
 :root[data-theme="dark"]{--bg:#171b21;--ink:#e6e9ee;--cell:#222831;--line:#566170;--sel:#2f4a73;--rel:#2a323d;--err:#ff6b62;--given:#fff;--user:#7fb0ff;--btn:#303846;--acc:#7fb0ff;--card:#222831}
 [hidden]{display:none!important}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:520px;margin:0 auto;padding:14px 12px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+:root{--bw:min(98vw,520px,calc(100dvh - 290px))}@media (min-width:900px){:root{--bw:560px}}
+.side{display:none}@media (max-width:899px){html,body{overflow:hidden;height:100dvh}}
+.box{max-height:90dvh;overflow:auto}.box p{margin:6px 0;text-align:left;font-size:.9rem}.box table{font-size:.9rem}
+.layout{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}.col{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;order:-1}
+.side{width:var(--bw);box-sizing:border-box;background:var(--card);border-radius:12px;padding:12px 14px;font-size:.85rem;line-height:1.45}.side p{margin:8px 0 0}.side td{padding:1px 0}
+.sd{display:inline-block;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #25303b;box-sizing:border-box;vertical-align:middle;margin-right:6px}
+.sd.sq{width:36px;height:36px;font-size:10px;line-height:1.15;display:inline-flex;align-items:center;justify-content:center;text-align:center;font-weight:700;color:#111}
+@media (min-width:900px){.layout{flex-direction:row;align-items:flex-start;justify-content:center}.col{width:auto;flex:none;order:0}.side{width:220px;display:block}}
+main{max-width:1000px;margin:0 auto;padding:10px 6px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
 h1{font-size:1.5rem;margin:8px 0 0}
 button{font:inherit;color:var(--ink);background:var(--btn);border:0;border-radius:10px;padding:9px 14px;cursor:pointer}
 button.pri{background:var(--acc);color:#fff}
@@ -21,10 +29,10 @@ button.pri{background:var(--acc);color:#fff}
 .lvls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(94vw,480px)}
 .lvls button{padding:12px 4px;display:flex;flex-direction:column;gap:3px;align-items:center}
 .lvls small{opacity:.75;font-size:.72rem}
-.top{display:flex;justify-content:space-between;align-items:center;width:min(94vw,480px);gap:8px}
+.top{display:flex;justify-content:space-between;align-items:center;width:var(--bw);gap:8px}
 .top .t{font-variant-numeric:tabular-nums;font-weight:700;font-size:1.2rem;text-align:center}
 .top small{display:block;font-weight:400;opacity:.75;font-size:.72rem}
-#board{--w:min(94vw,480px);position:relative;width:var(--w);height:var(--w);display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));border:3px solid var(--ink);box-sizing:content-box;user-select:none;touch-action:manipulation}
+#board{--w:var(--bw);position:relative;width:var(--w);height:var(--w);display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:repeat(9,minmax(0,1fr));border:3px solid var(--ink);box-sizing:content-box;user-select:none;touch-action:manipulation}
 .cell{position:relative;min-width:0;min-height:0;overflow:hidden;background:var(--cell);border:1px solid var(--line);box-sizing:border-box;display:flex;align-items:center;justify-content:center;font-size:calc(var(--w)/9*.55);cursor:pointer}
 .cell.r2{border-bottom:2px solid var(--ink)}.cell.c2{border-right:2px solid var(--ink)}
 .cell.rel{background:var(--rel)}.cell.sel{background:var(--sel)}
@@ -33,15 +41,17 @@ button.pri{background:var(--acc);color:#fff}
 .notes span{display:flex;align-items:center;justify-content:center}
 .dot,.quad{position:absolute;border-radius:50%;background:#fff;border:2px solid #25303b;box-sizing:border-box;transform:translate(-50%,-50%);pointer-events:none}
 .dot{width:calc(var(--w)/9*.26);height:calc(var(--w)/9*.26);z-index:2}
-.quad{width:calc(var(--w)/9*.46);height:calc(var(--w)/9*.46);z-index:3;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;padding:1px;color:#111;font-size:calc(var(--w)/9*.19);line-height:1}
+.quad{width:calc(var(--w)/9*.6);height:calc(var(--w)/9*.6);z-index:3;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;padding:1px;color:#111;font-size:calc(var(--w)/9*.25);line-height:1}
 .quad b{width:50%;text-align:center}.quad.three b:last-child{width:100%}
-.pad{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;width:min(94vw,480px)}
+.pad{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;width:var(--bw)}
 .pad button{padding:10px 0;font-size:1.15rem}
 .pad.four{grid-template-columns:repeat(4,1fr)}.pad.four button{font-size:.95rem;padding:9px 2px}
 #msg{min-height:1.4em;font-weight:600;text-align:center}
 .help{font-size:.85rem;opacity:.8;text-align:center;max-width:460px;line-height:1.4}
 #modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .box{background:var(--card);border-radius:16px;padding:24px;max-width:340px;width:100%;text-align:center;display:flex;flex-direction:column;gap:10px}
+#board.paused .cell,#board.paused .dot,#board.paused .quad{visibility:hidden}
+#board.paused::after{content:"Paused";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--cell);font-size:2rem;font-weight:700;z-index:5}
 .box h2{margin:0}.box .big{font-size:2.2rem;font-weight:800;font-variant-numeric:tabular-nums}
 .badge{background:#f5c542;color:#222;border-radius:99px;padding:4px 12px;font-weight:700;align-self:center}
 </style>
@@ -54,13 +64,17 @@ button.pri{background:var(--acc);color:#fff}
   <div class="lvls" id="lvls"></div>
   <p class="help">Small white dot: the two digits are consecutive. Circle on a corner: its digits must all appear in the four cells around it. Every puzzle has exactly one solution.</p>
 </section>
-<section id="game" style="display:contents" hidden>
-  <div class="top"><button id="back">Menu</button><div class="t"><span id="time">0:00</span><small id="best"></small></div><button id="again">New</button></div>
+<section id="game" class="layout" hidden>
+  <aside class="side" id="bests"></aside>
+  <div class="col">
+  <div class="top"><button id="back">Menu</button><div class="t"><span id="time">0:00</span><small id="best"></small></div><div style="display:flex;gap:6px"><button id="pause">Pause</button><button id="again">New</button></div></div>
   <div id="board"></div>
   <div class="pad" id="pad"></div>
   <div class="pad four"><button id="notes">Notes: off</button><button id="erase">Erase</button><button id="check">Check</button><button id="reveal">Reveal</button></div>
   <div id="msg"></div>
   <small class="help" id="label"></small>
+  </div>
+  <aside class="side" id="howto"></aside>
 </section>
 </main>
 <div id="modal" hidden></div>
@@ -68,7 +82,7 @@ button.pri{background:var(--acc);color:#fff}
 const $=s=>document.querySelector(s);
 const MODES=[["Normal","Classic sudoku with some digits given."],["Kropki","Some digits given, plus dots and circles."],["Impossible","No digits given. Only dots and circles."]];
 const LV=["Easy","Medium","Hard","Expert"];
-let mode=0,lv=0,P,val,notes,sel=-1,pencil=false,t0=0,tick=null,done=false;
+let mode=0,lv=0,P,val,notes,sel=-1,pencil=false,t0=0,tick=null,done=false,paused=false,pAt=0,BH="",IH="",menuOpen=false;
 const shuf=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const fmt=ms=>{const s=Math.floor(ms/1000);return (s/60|0)+":"+String(s%60).padStart(2,"0")};
 const bk=(m=mode,l=lv)=>"dotsudoku:"+m+":"+l;
@@ -163,14 +177,31 @@ function menu(){
 }
 $("#modes").onclick=e=>{const b=e.target.closest("button");if(b){mode=+b.dataset.m;menu()}};
 $("#lvls").onclick=e=>{const b=e.target.closest("button");if(b){lv=+b.dataset.l;start()}};
-$("#back").onclick=()=>{clearInterval(tick);$("#game").hidden=true;$("#menu").hidden=false;menu()};
+function exitGame(){clearInterval(tick);$("#modal").hidden=true;$("#game").hidden=true;$("#menu").hidden=false;menu()}
+function pop(h){menuOpen=true;$("#modal").innerHTML=`<div class="box">${h}</div>`;$("#modal").hidden=false}
+function gameMenu(){
+  setPause(true);
+  pop(`<h2>Menu</h2><button id="mi">Info</button><button id="ml">Leaderboard</button><button id="mx">Exit</button><button class="pri" id="mc">Resume</button>`);
+  $("#mi").onclick=()=>sub(IH);$("#ml").onclick=()=>sub(BH);$("#mx").onclick=exitGame;$("#mc").onclick=closeMenu;
+}
+function sub(h){pop(h+`<button id="mb">Back</button>`);$("#mb").onclick=gameMenu}
+function closeMenu(){$("#modal").hidden=true;setPause(false)}
+$("#back").onclick=gameMenu;
+$("#modal").addEventListener("click",e=>{if(e.target===$("#modal")&&menuOpen)closeMenu()});
 $("#again").onclick=()=>start();
 
 /* ---------- game ---------- */
+function sides(){
+  let h='<b>Personal bests</b><table style="width:100%;margin-top:6px;border-collapse:collapse">';
+  MODES.forEach((m,i)=>{h+=`<tr><td colspan="2" style="padding-top:6px"><b>${m[0]}</b></td></tr>`+LV.map((n,j)=>{const b=getBest(i,j);return `<tr><td>${n}</td><td style="text-align:right">${b?fmt(b):"—"}</td></tr>`}).join("")});
+  $("#bests").innerHTML=BH=h+"</table>";
+  $("#howto").hidden=mode==0;
+  $("#howto").innerHTML=IH=`<b>How to read the dots</b><p><span class="sd"></span>Small dot between two cells: their digits are consecutive (like 4 and 5, in either order).</p><p><span class="sd sq">1 6<br>2 4</span>Circle on a corner: the four cells touching it contain all the digits shown, in any order and position.</p><p><b>No dot</b> between two cells gives no information. They may or may not be consecutive.</p><p>Normal sudoku rules still apply: each row, column and 3×3 box holds 1–9 once.${mode==2?" In Impossible mode no digits are given, so use the dots and circles to deduce everything.":""}</p>`;
+}
 function start(){
   $("#modal").hidden=true;$("#menu").hidden=true;$("#game").hidden=false;
-  clearInterval(tick);$("#board").innerHTML="";$("#msg").textContent="Generating a puzzle…";
-  $("#label").textContent=MODES[mode][0]+" · "+LV[lv];
+  clearInterval(tick);$("#board").innerHTML="";$("#msg").textContent="Generating a puzzle…";done=true;paused=false;$("#board").classList.remove("paused");$("#pause").textContent="Pause";
+  $("#label").textContent=MODES[mode][0]+" · "+LV[lv];sides();
   setTimeout(()=>{
     P=gen(mode,lv);val=P.giv.slice();notes=Array.from({length:81},()=>new Set());sel=-1;done=false;
     $("#msg").textContent="";t0=Date.now();tick=setInterval(upd,500);render();upd();
@@ -200,13 +231,20 @@ function render(){
   if(!done&&val.every(Boolean)&&!bad.size)win();
 }
 function win(){
-  done=true;clearInterval(tick);const t=Date.now()-t0,prev=getBest(),nb=!prev||t<prev;if(nb)setBest(t);
-  $("#time").textContent=fmt(t);
+  menuOpen=false;done=true;clearInterval(tick);const t=Date.now()-t0,prev=getBest(),nb=!prev||t<prev;if(nb)setBest(t);
+  $("#time").textContent=fmt(t);sides();
   $("#modal").innerHTML=`<div class="box"><h2>Puzzle solved!</h2><div class="big">${fmt(t)}</div>${nb?'<span class="badge">New personal best</span>':`<div>Personal best: ${fmt(prev)}</div>`}<div>${MODES[mode][0]} · ${LV[lv]}</div><button class="pri" id="nx">Next puzzle</button><button id="mn">Back to menu</button></div>`;
-  $("#modal").hidden=false;$("#nx").onclick=start;$("#mn").onclick=()=>{$("#modal").hidden=true;$("#back").click()};
+  $("#modal").hidden=false;$("#nx").onclick=start;$("#mn").onclick=exitGame;
 }
+function setPause(p){
+  if(done||!P||$("#game").hidden||p==paused)return;paused=p;
+  if(p){pAt=Date.now();clearInterval(tick)}else{t0+=Date.now()-pAt;tick=setInterval(upd,500);upd()}
+  $("#board").classList.toggle("paused",p);$("#pause").textContent=p?"Resume":"Pause";
+}
+$("#pause").onclick=()=>setPause(!paused);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)setPause(true)});
 function put(n){
-  if(done||sel<0||P.giv[sel])return;$("#msg").textContent="";
+  if(done||paused||sel<0||P.giv[sel])return;$("#msg").textContent="";
   if(n==0){val[sel]=0;notes[sel].clear()}
   else if(pencil&&!val[sel]){notes[sel].has(n)?notes[sel].delete(n):notes[sel].add(n)}
   else{val[sel]=val[sel]==n?0:n;notes[sel].clear();
@@ -218,10 +256,10 @@ $("#pad").innerHTML=[1,2,3,4,5,6,7,8,9].map(n=>`<button data-n="${n}">${n}</butt
 $("#pad").addEventListener("click",e=>{const b=e.target.closest("button");if(b)put(+b.dataset.n)});
 $("#erase").onclick=()=>put(0);
 $("#notes").onclick=e=>{pencil=!pencil;e.target.textContent="Notes: "+(pencil?"on":"off")};
-$("#check").onclick=()=>{if(done)return;const b=conflicts();$("#msg").textContent=b.size?"Some cells break a rule (shown in red).":"No rule broken so far. Keep going!"};
-$("#reveal").onclick=()=>{if(done)return;done=true;clearInterval(tick);val=[...P.sol];render();$("#msg").textContent="Solution revealed. No record for this one."};
+$("#check").onclick=()=>{if(done||paused)return;const b=conflicts();$("#msg").textContent=b.size?"Some cells break a rule (shown in red).":"No rule broken so far. Keep going!"};
+$("#reveal").onclick=()=>{if(done||paused)return;done=true;clearInterval(tick);val=[...P.sol];render();$("#msg").textContent="Solution revealed. No record for this one."};
 document.addEventListener("keydown",e=>{
-  if($("#game").hidden||done)return;
+  if($("#game").hidden||done||paused)return;
   if(/^[1-9]$/.test(e.key))put(+e.key);
   else if(["Backspace","Delete","0"].includes(e.key))put(0);
   else if(sel>=0&&e.key.startsWith("Arrow")){e.preventDefault();const r=sel/9|0,c=sel%9;
